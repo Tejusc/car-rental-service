@@ -49,6 +49,17 @@
 | Phase | Branch | Status |
 |---|---|---|
 | 1 — Core CRUD + rent/return | `feat/phase-1-core` | ✅ Complete |
-| 2 — Filtering | `feat/phase-2-filtering` | 🔲 Pending |
-| 3 — Security hardening | `feat/phase-3-security` | 🔲 Pending |
-| 4 — Interactive UI | `feat/phase-4-ui` | 🔲 Pending |
+| 2 — Filtering | `feat/phases-2-3-4` | ✅ Complete |
+| 3 — Security hardening | `feat/phases-2-3-4` | ✅ Complete |
+| 4 — Interactive UI | `feat/phases-2-3-4` | ✅ Complete |
+
+## Additional Files (Phase 3+)
+| File | Owns |
+|---|---|
+| `app/limiter.py` | `slowapi` `Limiter` singleton — imported by router and main; avoids circular imports |
+| `static/index.html` | Vanilla HTML/CSS/JS UI served at `/` |
+
+## Test Isolation Note
+`tests/conftest.py` has an `autouse` fixture that:
+- Overrides `get_car_service` with a fresh `InMemoryCarRepository` per test (prevents state leakage)
+- Calls `limiter._storage.reset()` between tests (prevents rate limit accumulation)
