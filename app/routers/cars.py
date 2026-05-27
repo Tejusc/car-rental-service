@@ -1,10 +1,11 @@
 from uuid import UUID
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from app.models.schemas import CarCreate, RentRequest, CarResponse, RentalRecordResponse
 from app.services.car_service import CarService
 from app.dependencies import get_car_service
 from app.exceptions import CarNotFoundError, CarNotAvailableError, CarNotRentedError
+from app.limiter import limiter
 
 router = APIRouter(prefix="/cars", tags=["cars"])
 
@@ -40,7 +41,13 @@ async def add_car(data: CarCreate, service: CarService = Depends(get_car_service
 
 
 @router.post("/{car_id}/rent", response_model=CarResponse)
-async def rent_car(car_id: UUID, data: RentRequest, service: CarService = Depends(get_car_service)):
+@limiter.limit("5/minute")
+async def rent_car(
+    request: Request,
+    car_id: UUID,
+    data: RentRequest,
+    service: CarService = Depends(get_car_service),
+):
     try:
         return await service.rent_car(car_id, data)
     except CarNotFoundError:

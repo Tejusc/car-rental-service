@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Car Rental Service</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #16213e;
+      color: white;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    header h1 { font-size: 1.4rem; font-weight: 600; }
+
+    main { max-width: 960px; margin: 32px auto; padding: 0 20px; }
+
+    section { margin-bottom: 32px; }
+    section h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #16213e;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    /* Add car form */
+    .add-form {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .add-form input {
+      flex: 1;
+      min-width: 120px;
+      padding: 10px 14px;
+      border: 1px solid #dde1e7;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .add-form input:focus { border-color: #4361ee; }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: #4361ee; color: white; }
+    .btn-rent    { background: #3a86ff; color: white; }
+    .btn-return  { background: #2ec4b6; color: white; }
+
+    /* Filters */
+    .filters {
+      background: white;
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .filters input, .filters select {
+      padding: 8px 12px;
+      border: 1px solid #dde1e7;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .filters input:focus, .filters select:focus { border-color: #4361ee; }
+
+    /* Car list */
+    #carList { display: flex; flex-direction: column; gap: 10px; }
+
+    .car-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      transition: box-shadow 0.2s;
+    }
+    .car-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.12); }
+
+    .car-info { flex: 1; }
+    .car-title { font-size: 1rem; font-weight: 600; }
+    .car-sub   { font-size: 0.82rem; color: #6b7280; margin-top: 3px; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-left: 10px;
+    }
+    .badge-available { background: #d1fae5; color: #065f46; }
+    .badge-rented    { background: #fee2e2; color: #991b1b; }
+
+    .car-actions { display: flex; gap: 8px; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #1a1a2e;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+      max-width: 320px;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.error { background: #dc2626; }
+
+    .empty { color: #9ca3af; font-size: 0.9rem; padding: 16px 0; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Car Rental Service</h1>
+</header>
+
+<main>
+
+  <section>
+    <h2>Add a Car</h2>
+    <form class="add-form" id="addForm">
+      <input id="make"  placeholder="Make (e.g. Toyota)"  maxlength="100" required>
+      <input id="model" placeholder="Model (e.g. Camry)"  maxlength="100" required>
+      <input id="year"  placeholder="Year (e.g. 2022)" type="number" min="1900" max="2100" required>
+      <button type="submit" class="btn btn-primary">Add Car</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Browse Cars</h2>
+    <div class="filters">
+      <input id="fMake"  placeholder="Filter: Make">
+      <input id="fModel" placeholder="Filter: Model">
+      <input id="fYear"  placeholder="Filter: Year" type="number">
+      <select id="fAvail">
+        <option value="">All</option>
+        <option value="true">Available only</option>
+        <option value="false">Rented only</option>
+      </select>
+      <button class="btn btn-primary" onclick="loadCars()">Apply</button>
+    </div>
+    <div style="margin-top:14px;" id="carList"></div>
+  </section>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+  const BASE = "";
+  let toastTimer;
+
+  function toast(msg, isError = false) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.className = "show" + (isError ? " error" : "");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = ""; }, 3000);
+  }
+
+  async function loadCars() {
+    const params = new URLSearchParams();
+    const make  = document.getElementById("fMake").value.trim();
+    const model = document.getElementById("fModel").value.trim();
+    const year  = document.getElementById("fYear").value.trim();
+    const avail = document.getElementById("fAvail").value;
+    if (make)        params.set("make", make);
+    if (model)       params.set("model", model);
+    if (year)        params.set("year", year);
+    if (avail !== "") params.set("available", avail);
+
+    const resp = await fetch(`${BASE}/cars?${params}`);
+    const cars = await resp.json();
+    const list = document.getElementById("carList");
+
+    if (!cars.length) {
+      list.innerHTML = '<p class="empty">No cars match the current filters.</p>';
+      return;
+    }
+
+    list.innerHTML = "";
+    cars.forEach(car => {
+      const div = document.createElement("div");
+      div.className = "car-card";
+      const badge = car.is_available
+        ? '<span class="badge badge-available">Available</span>'
+        : `<span class="badge badge-rented">Rented by ${escHtml(car.rented_by)}</span>`;
+
+      div.innerHTML = `
+        <div class="car-info">
+          <div class="car-title">${escHtml(car.make)} ${escHtml(car.model)} (${car.year}) ${badge}</div>
+          <div class="car-sub">ID: ${car.id}</div>
+        </div>
+        <div class="car-actions">
+          <button class="btn btn-rent"   ${car.is_available ? "" : "disabled"} onclick="rentCar('${car.id}')">Rent</button>
+          <button class="btn btn-return" ${car.is_available ? "disabled" : ""} onclick="returnCar('${car.id}')">Return</button>
+        </div>`;
+      list.appendChild(div);
+    });
+  }
+
+  async function rentCar(id) {
+    const name = prompt("Enter your name to rent this car:");
+    if (!name || !name.trim()) return;
+    if (name.trim().length > 100) { toast("Name too long (max 100 chars)", true); return; }
+
+    const resp = await fetch(`${BASE}/cars/${id}/rent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ renter_name: name.trim() }),
+    });
+    const data = await resp.json();
+    if (resp.ok) {
+      toast(`Rented to ${data.rented_by}`);
+    } else if (resp.status === 429) {
+      toast("Too many requests — please wait a moment", true);
+    } else {
+      toast(data.detail || "Could not rent car", true);
+    }
+    loadCars();
+  }
+
+  async function returnCar(id) {
+    const resp = await fetch(`${BASE}/cars/${id}/return`, { method: "POST" });
+    const data = await resp.json();
+    resp.ok ? toast("Car returned successfully") : toast(data.detail || "Could not return car", true);
+    loadCars();
+  }
+
+  document.getElementById("addForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const resp = await fetch(`${BASE}/cars`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        make:  document.getElementById("make").value.trim(),
+        model: document.getElementById("model").value.trim(),
+        year:  parseInt(document.getElementById("year").value),
+      }),
+    });
+    const data = await resp.json();
+    if (resp.ok) {
+      toast(`Added: ${data.make} ${data.model} (${data.year})`);
+      document.getElementById("addForm").reset();
+    } else {
+      toast(data.detail || "Could not add car", true);
+    }
+    loadCars();
+  });
+
+  function escHtml(str) {
+    return String(str ?? "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  loadCars();
+</script>
+
+</body>
+</html>
