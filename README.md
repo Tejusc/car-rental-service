@@ -72,8 +72,14 @@ API docs available at: `http://localhost:8000/docs`
 ---
 
 ## Interactive UI
-_(Phase 4 — coming soon)_  
 Served at `http://localhost:8000/` — vanilla HTML/CSS/JS, no framework, no build step.
+
+Features:
+- Add a car (make, model, year)
+- Browse and filter cars by make, model, year, and availability
+- Rent a car (prompts for renter name)
+- Return a car
+- Toast notifications for all actions
 
 ---
 
@@ -143,9 +149,9 @@ HTTP Request
 | Phase | Branch | Status | Scope |
 |---|---|---|---|
 | 1 | `feat/phase-1-core` | ✅ | Core CRUD, rent, return |
-| 2 | `feat/phase-2-filtering` | 🔲 | Filter by make, model, year, availability |
-| 3 | `feat/phase-3-security` | 🔲 | Rate limiting, CORS, input caps |
-| 4 | `feat/phase-4-ui` | 🔲 | Interactive UI at `/` |
+| 2 | `feat/phases-2-3-4` | ✅ | Filter by make, model, year, availability |
+| 3 | `feat/phases-2-3-4` | ✅ | Rate limiting, CORS, input caps |
+| 4 | `feat/phases-2-3-4` | ✅ | Interactive UI at `/` |
 
 ---
 

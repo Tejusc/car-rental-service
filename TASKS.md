@@ -15,21 +15,22 @@
 - [x] TDD: 8 tests passing (`tests/test_cars_crud.py`)
 - [x] CLAUDE.md, TASKS.md, README.md, demo.sh
 
-## Phase 2 — Filtering 🔲
-- [ ] TDD: filter tests (`tests/test_filtering.py`)
-- [ ] Verify `GET /cars?make=&model=&year=&available=` works
-- [ ] Update README, TASKS.md, CLAUDE.md
+## Phase 2 — Filtering ✅
+- [x] TDD: filter tests (`tests/test_filtering.py`) — 7 tests
+- [x] Filter `GET /cars?make=&model=&year=&available=` verified
+- [x] autouse fixture in `conftest.py` for isolated test state
 
-## Phase 3 — Security 🔲
-- [ ] TDD: security tests (`tests/test_security.py`)
-- [ ] Rate limiting via `slowapi` (5/min on write endpoints)
-- [ ] CORS restricted to `ALLOWED_ORIGINS` env var
-- [ ] Input length caps — already in Pydantic schemas (max_length=100)
-- [ ] autouse fixture to reset rate limiter between tests
-- [ ] Update README, TASKS.md, CLAUDE.md
+## Phase 3 — Security ✅
+- [x] TDD: security tests (`tests/test_security.py`) — 5 tests
+- [x] Rate limiting via `slowapi` (5/min on rent endpoint, per IP)
+- [x] CORS restricted to `ALLOWED_ORIGINS` env var
+- [x] Input length caps on all string fields (max_length=100)
+- [x] `limiter._storage.reset()` in autouse fixture prevents cross-test accumulation
+- [x] `app/limiter.py` singleton avoids circular import with `app/main.py`
 
-## Phase 4 — Interactive UI 🔲
-- [ ] Vanilla HTML/CSS/JS at `/` via `FastAPI.StaticFiles`
-- [ ] Full happy path: add car, filter, rent, return
-- [ ] Mount static files in `app/main.py`
-- [ ] Update README, TASKS.md, CLAUDE.md
+## Phase 4 — Interactive UI ✅
+- [x] Vanilla HTML/CSS/JS at `/` via `FastAPI.StaticFiles` + `FileResponse`
+- [x] Full happy path: add car, filter by make/model/year/availability, rent, return
+- [x] Toast notifications for success and error states
+- [x] XSS-safe rendering via `escHtml()` helper
+- [x] 20/20 tests passing
