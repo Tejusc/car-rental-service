@@ -58,6 +58,7 @@
       transition: border-color 0.2s;
     }
     .add-form input:focus { border-color: #4361ee; }
+
     .btn {
       padding: 10px 20px;
       border: none;
@@ -69,11 +70,14 @@
     }
     .btn:active { transform: scale(0.97); }
     .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-    .btn-primary { background: #4361ee; color: white; }
-    .btn-rent    { background: #3a86ff; color: white; }
-    .btn-return  { background: #2ec4b6; color: white; }
+    .btn-primary  { background: #4361ee; color: white; }
+    .btn-rent     { background: #3a86ff; color: white; }
+    .btn-return   { background: #2ec4b6; color: white; }
+    .btn-page     { background: white; color: #4361ee; border: 1px solid #4361ee; padding: 6px 14px; }
+    .btn-page:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-page.active   { background: #4361ee; color: white; }
 
-    /* Filters */
+    /* Filters row */
     .filters {
       background: white;
       border-radius: 12px;
@@ -92,6 +96,34 @@
       outline: none;
     }
     .filters input:focus, .filters select:focus { border-color: #4361ee; }
+    .filters-spacer { flex: 1; }
+
+    /* Per-page label */
+    .per-page-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+    .per-page-wrap select {
+      padding: 6px 10px;
+      border: 1px solid #dde1e7;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Results meta row */
+    .results-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 12px 0 8px;
+      font-size: 0.83rem;
+      color: #6b7280;
+    }
 
     /* Car list */
     #carList { display: flex; flex-direction: column; gap: 10px; }
@@ -107,7 +139,6 @@
       transition: box-shadow 0.2s;
     }
     .car-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.12); }
-
     .car-info { flex: 1; }
     .car-title { font-size: 1rem; font-weight: 600; }
     .car-sub   { font-size: 0.82rem; color: #6b7280; margin-top: 3px; }
@@ -122,8 +153,18 @@
     }
     .badge-available { background: #d1fae5; color: #065f46; }
     .badge-rented    { background: #fee2e2; color: #991b1b; }
-
     .car-actions { display: flex; gap: 8px; }
+
+    /* Pagination bar */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .page-info { font-size: 0.85rem; color: #6b7280; margin: 0 8px; }
 
     /* Toast */
     #toast {
@@ -168,6 +209,7 @@
 
   <section>
     <h2>Browse Cars</h2>
+
     <div class="filters">
       <input id="fMake"  placeholder="Filter: Make">
       <input id="fModel" placeholder="Filter: Model">
@@ -177,9 +219,25 @@
         <option value="true">Available only</option>
         <option value="false">Rented only</option>
       </select>
-      <button class="btn btn-primary" onclick="loadCars()">Apply</button>
+      <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
+      <div class="filters-spacer"></div>
+      <div class="per-page-wrap">
+        <span>Per page:</span>
+        <select id="pageSize" onchange="changePageSize()">
+          <option value="20" selected>20</option>
+          <option value="30">30</option>
+          <option value="50">50</option>
+        </select>
+      </div>
     </div>
-    <div style="margin-top:14px;" id="carList"></div>
+
+    <div class="results-meta">
+      <span id="resultsSummary"></span>
+    </div>
+
+    <div id="carList"></div>
+
+    <div class="pagination" id="pagination"></div>
   </section>
 
 </main>
@@ -189,6 +247,7 @@
 <script>
   const BASE = "";
   let toastTimer;
+  let currentPage = 1;
 
   function toast(msg, isError = false) {
     const el = document.getElementById("toast");
@@ -198,28 +257,54 @@
     toastTimer = setTimeout(() => { el.className = ""; }, 3000);
   }
 
-  async function loadCars() {
+  function applyFilters() {
+    // Reset to page 1 whenever filters change
+    currentPage = 1;
+    loadCars();
+  }
+
+  function changePageSize() {
+    currentPage = 1;
+    loadCars();
+  }
+
+  async function loadCars(page) {
+    if (page !== undefined) currentPage = page;
+
     const params = new URLSearchParams();
-    const make  = document.getElementById("fMake").value.trim();
-    const model = document.getElementById("fModel").value.trim();
-    const year  = document.getElementById("fYear").value.trim();
-    const avail = document.getElementById("fAvail").value;
-    if (make)        params.set("make", make);
-    if (model)       params.set("model", model);
-    if (year)        params.set("year", year);
+    const make     = document.getElementById("fMake").value.trim();
+    const model    = document.getElementById("fModel").value.trim();
+    const year     = document.getElementById("fYear").value.trim();
+    const avail    = document.getElementById("fAvail").value;
+    const pageSize = document.getElementById("pageSize").value;
+
+    if (make)         params.set("make", make);
+    if (model)        params.set("model", model);
+    if (year)         params.set("year", year);
     if (avail !== "") params.set("available", avail);
+    params.set("page", currentPage);
+    params.set("page_size", pageSize);
 
     const resp = await fetch(`${BASE}/cars?${params}`);
-    const cars = await resp.json();
-    const list = document.getElementById("carList");
+    const data = await resp.json();
+    const { items, total, total_pages } = data;
 
-    if (!cars.length) {
+    // Results summary
+    const start = (currentPage - 1) * parseInt(pageSize) + 1;
+    const end   = Math.min(currentPage * parseInt(pageSize), total);
+    document.getElementById("resultsSummary").textContent =
+      total === 0 ? "No cars found" : `Showing ${start}–${end} of ${total} cars`;
+
+    // Car list
+    const list = document.getElementById("carList");
+    if (!items.length) {
       list.innerHTML = '<p class="empty">No cars match the current filters.</p>';
+      renderPagination(0, 1);
       return;
     }
 
     list.innerHTML = "";
-    cars.forEach(car => {
+    items.forEach(car => {
       const div = document.createElement("div");
       div.className = "car-card";
       const badge = car.is_available
@@ -237,6 +322,55 @@
         </div>`;
       list.appendChild(div);
     });
+
+    renderPagination(total_pages, currentPage);
+  }
+
+  function renderPagination(totalPages, page) {
+    const bar = document.getElementById("pagination");
+    bar.innerHTML = "";
+    if (totalPages <= 1) return;
+
+    // Prev button
+    const prev = document.createElement("button");
+    prev.className = "btn btn-page";
+    prev.textContent = "← Prev";
+    prev.disabled = page <= 1;
+    prev.onclick = () => loadCars(page - 1);
+    bar.appendChild(prev);
+
+    // Page number buttons — show up to 7 pages with ellipsis logic
+    const pages = pagesToShow(page, totalPages);
+    let last = 0;
+    pages.forEach(p => {
+      if (p - last > 1) {
+        const dots = document.createElement("span");
+        dots.className = "page-info";
+        dots.textContent = "…";
+        bar.appendChild(dots);
+      }
+      const btn = document.createElement("button");
+      btn.className = "btn btn-page" + (p === page ? " active" : "");
+      btn.textContent = p;
+      btn.onclick = () => loadCars(p);
+      bar.appendChild(btn);
+      last = p;
+    });
+
+    // Next button
+    const next = document.createElement("button");
+    next.className = "btn btn-page";
+    next.textContent = "Next →";
+    next.disabled = page >= totalPages;
+    next.onclick = () => loadCars(page + 1);
+    bar.appendChild(next);
+  }
+
+  function pagesToShow(current, total) {
+    // Always show first, last, current ±2, fill rest up to 7
+    const set = new Set([1, total, current]);
+    for (let i = Math.max(1, current - 2); i <= Math.min(total, current + 2); i++) set.add(i);
+    return [...set].sort((a, b) => a - b);
   }
 
   async function rentCar(id) {

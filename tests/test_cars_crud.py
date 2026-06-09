@@ -24,7 +24,7 @@ async def test_list_cars(client):
     await client.post("/cars", json={"make": "Honda", "model": "Civic", "year": 2021})
     resp = await client.get("/cars")
     assert resp.status_code == 200
-    assert len(resp.json()) >= 1
+    assert resp.json()["total"] >= 1
 
 
 @pytest.mark.asyncio

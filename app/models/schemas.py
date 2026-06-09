@@ -2,6 +2,7 @@ from uuid import UUID
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, Field
+from math import ceil
 
 
 class CarCreate(BaseModel):
@@ -23,6 +24,14 @@ class CarResponse(BaseModel):
     rented_by: Optional[str]
     created_at: datetime
     updated_at: datetime
+
+
+class PaginatedCarsResponse(BaseModel):
+    items: list[CarResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
 
 
 class RentalRecordResponse(BaseModel):

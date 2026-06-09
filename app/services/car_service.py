@@ -1,9 +1,10 @@
 import logging
+from math import ceil
 from uuid import UUID
 from typing import Optional
 from app.repositories.base import CarRepository
 from app.models.car import Car, RentalRecord
-from app.models.schemas import CarCreate, RentRequest
+from app.models.schemas import CarCreate, RentRequest, PaginatedCarsResponse, CarResponse
 from app.exceptions import CarNotFoundError, CarNotAvailableError, CarNotRentedError
 
 logger = logging.getLogger(__name__)
@@ -19,8 +20,11 @@ class CarService:
         model: Optional[str] = None,
         year: Optional[int] = None,
         available: Optional[bool] = None,
-    ) -> list[Car]:
+        page: int = 1,
+        page_size: int = 20,
+    ) -> PaginatedCarsResponse:
         cars = await self._repo.get_all()
+        # Apply filters before paginating so totals reflect the filtered set
         if make:
             cars = [c for c in cars if c.make.lower() == make.lower()]
         if model:
@@ -29,11 +33,24 @@ class CarService:
             cars = [c for c in cars if c.year == year]
         if available is not None:
             cars = [c for c in cars if c.is_available == available]
+
+        total = len(cars)
+        total_pages = ceil(total / page_size) if total > 0 else 1
+        start = (page - 1) * page_size
+        page_items = cars[start: start + page_size]
+
         logger.info(
             "list_cars",
-            extra={"count": len(cars), "filters": {"make": make, "model": model, "year": year, "available": available}},
+            extra={"total": total, "page": page, "page_size": page_size,
+                   "filters": {"make": make, "model": model, "year": year, "available": available}},
         )
-        return cars
+        return PaginatedCarsResponse(
+            items=[CarResponse(**c.model_dump()) for c in page_items],
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
+        )
 
     async def get_car(self, car_id: UUID) -> Car:
         car = await self._repo.get_by_id(car_id)

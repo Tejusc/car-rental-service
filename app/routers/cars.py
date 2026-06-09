@@ -1,7 +1,7 @@
 from uuid import UUID
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from app.models.schemas import CarCreate, RentRequest, CarResponse, RentalRecordResponse
+from app.models.schemas import CarCreate, RentRequest, CarResponse, RentalRecordResponse, PaginatedCarsResponse
 from app.services.car_service import CarService
 from app.dependencies import get_car_service
 from app.exceptions import CarNotFoundError, CarNotAvailableError, CarNotRentedError
@@ -16,15 +16,20 @@ async def list_rentals(service: CarService = Depends(get_car_service)):
     return await service.list_rental_records()
 
 
-@router.get("", response_model=list[CarResponse])
+@router.get("", response_model=PaginatedCarsResponse)
 async def list_cars(
     make: Optional[str] = None,
     model: Optional[str] = None,
     year: Optional[int] = None,
     available: Optional[bool] = None,
+    page: int = 1,
+    page_size: int = 20,
     service: CarService = Depends(get_car_service),
 ):
-    return await service.list_cars(make=make, model=model, year=year, available=available)
+    return await service.list_cars(
+        make=make, model=model, year=year, available=available,
+        page=page, page_size=page_size,
+    )
 
 
 @router.get("/{car_id}", response_model=CarResponse)
