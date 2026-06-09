@@ -21,16 +21,68 @@ async def lifespan(app: FastAPI):
 
     service = get_car_service()
     seed_cars = [
-        CarCreate(make="Toyota",    model="Camry",    year=2022),
-        CarCreate(make="Toyota",    model="Corolla",  year=2021),
-        CarCreate(make="Honda",     model="Civic",    year=2023),
-        CarCreate(make="Honda",     model="Accord",   year=2022),
-        CarCreate(make="Ford",      model="Mustang",  year=2023),
-        CarCreate(make="Ford",      model="Focus",    year=2020),
-        CarCreate(make="BMW",       model="3 Series", year=2022),
-        CarCreate(make="Audi",      model="A4",       year=2021),
-        CarCreate(make="Tesla",     model="Model 3",  year=2023),
-        CarCreate(make="Chevrolet", model="Malibu",   year=2021),
+        # Toyota
+        CarCreate(make="Toyota",    model="Camry",          year=2022),
+        CarCreate(make="Toyota",    model="Corolla",        year=2021),
+        CarCreate(make="Toyota",    model="RAV4",           year=2023),
+        CarCreate(make="Toyota",    model="Highlander",     year=2022),
+        CarCreate(make="Toyota",    model="Prius",          year=2021),
+        # Honda
+        CarCreate(make="Honda",     model="Civic",          year=2023),
+        CarCreate(make="Honda",     model="Accord",         year=2022),
+        CarCreate(make="Honda",     model="CR-V",           year=2023),
+        CarCreate(make="Honda",     model="Pilot",          year=2021),
+        CarCreate(make="Honda",     model="HR-V",           year=2022),
+        # Ford
+        CarCreate(make="Ford",      model="Mustang",        year=2023),
+        CarCreate(make="Ford",      model="Focus",          year=2020),
+        CarCreate(make="Ford",      model="Explorer",       year=2022),
+        CarCreate(make="Ford",      model="F-150",          year=2023),
+        CarCreate(make="Ford",      model="Escape",         year=2021),
+        # BMW
+        CarCreate(make="BMW",       model="3 Series",       year=2022),
+        CarCreate(make="BMW",       model="5 Series",       year=2023),
+        CarCreate(make="BMW",       model="X5",             year=2022),
+        CarCreate(make="BMW",       model="X3",             year=2021),
+        CarCreate(make="BMW",       model="M4",             year=2023),
+        # Audi
+        CarCreate(make="Audi",      model="A4",             year=2021),
+        CarCreate(make="Audi",      model="A6",             year=2022),
+        CarCreate(make="Audi",      model="Q5",             year=2023),
+        CarCreate(make="Audi",      model="Q7",             year=2022),
+        CarCreate(make="Audi",      model="e-tron",         year=2023),
+        # Tesla
+        CarCreate(make="Tesla",     model="Model 3",        year=2023),
+        CarCreate(make="Tesla",     model="Model S",        year=2022),
+        CarCreate(make="Tesla",     model="Model X",        year=2023),
+        CarCreate(make="Tesla",     model="Model Y",        year=2022),
+        CarCreate(make="Tesla",     model="Cybertruck",     year=2024),
+        # Chevrolet
+        CarCreate(make="Chevrolet", model="Malibu",         year=2021),
+        CarCreate(make="Chevrolet", model="Camaro",         year=2022),
+        CarCreate(make="Chevrolet", model="Equinox",        year=2023),
+        CarCreate(make="Chevrolet", model="Silverado",      year=2022),
+        CarCreate(make="Chevrolet", model="Tahoe",          year=2021),
+        # Mercedes
+        CarCreate(make="Mercedes",  model="C-Class",        year=2022),
+        CarCreate(make="Mercedes",  model="E-Class",        year=2023),
+        CarCreate(make="Mercedes",  model="GLC",            year=2022),
+        CarCreate(make="Mercedes",  model="GLE",            year=2021),
+        CarCreate(make="Mercedes",  model="A-Class",        year=2023),
+        # Hyundai
+        CarCreate(make="Hyundai",   model="Elantra",        year=2022),
+        CarCreate(make="Hyundai",   model="Tucson",         year=2023),
+        CarCreate(make="Hyundai",   model="Santa Fe",       year=2022),
+        # Kia
+        CarCreate(make="Kia",       model="Stinger",        year=2021),
+        CarCreate(make="Kia",       model="Sportage",       year=2023),
+        CarCreate(make="Kia",       model="Telluride",      year=2022),
+        # Mazda
+        CarCreate(make="Mazda",     model="Mazda3",         year=2022),
+        CarCreate(make="Mazda",     model="CX-5",           year=2023),
+        # Volkswagen
+        CarCreate(make="Volkswagen", model="Golf",          year=2021),
+        CarCreate(make="Volkswagen", model="Tiguan",        year=2022),
     ]
     for car_data in seed_cars:
         await service.add_car(car_data)
